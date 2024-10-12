@@ -12,7 +12,8 @@
         // Settings
         const participantId = '531439';
         const requestUrl = `https://www.extra-life.org/api/participants/${participantId}`;
-        const startDateTime = DateTime.local(2024, 10, 12, 12, 0); // Use local date/time.
+        const startDateTime = DateTime.local(2024, 11, 4, 10, 0); // Use local date/time.
+        const totalRaisedStartingAmount = 0; // Amount of money raised to start counting from, in dollars.
         const initialSeconds = 28800; // 8 hours.
         const secondsPerDollar = 60;
 
@@ -21,9 +22,11 @@
         let totalSecondsLeft = 0;
 
         const updateTimer = () => {
-            const now = DateTime.now();
-            const additionalSeconds = Math.floor(totalAmountRaised) * secondsPerDollar;
+            const additionalSeconds = secondsPerDollar * Math.floor(
+                Math.max(totalAmountRaised - totalRaisedStartingAmount, 0)
+            );
 
+            const now = DateTime.now();
             const end = startDateTime.plus({ seconds: initialSeconds + additionalSeconds})
 
             const totalMs = now.diff(end).milliseconds;
