@@ -4,6 +4,87 @@
     <meta charset='UTF-8' />
     <meta name='viewport' content='width=device-width, initial-scale=1.0' />
     <title>ExtraLife-A-Thon</title>
+    <script src="luxon.js"></script>
+    <script src="axios.min.js"></script>
+    <script>
+        const DateTime = luxon.DateTime;
+
+        // Settings
+        const participantId = '531439';
+        const requestUrl = `https://www.extra-life.org/api/participants/${participantId}`;
+        const startDateTime = DateTime.local(2024, 10, 12, 12, 0); // Use local date/time.
+        const initialSeconds = 28800; // 8 hours.
+        const secondsPerDollar = 60;
+
+        let totalAmountRaised = 0;
+        let timerDisplay = '00:00:00';
+        let totalSecondsLeft = 0;
+
+        const updateTimer = () => {
+            const now = DateTime.now();
+            const additionalSeconds = Math.floor(totalAmountRaised) * secondsPerDollar;
+
+            const end = startDateTime.plus({ seconds: initialSeconds + additionalSeconds})
+
+            const totalMs = now.diff(end).milliseconds;
+
+            totalSecondsLeft = Math.floor(totalMs / 1000) * -1;
+
+            let ms = Math.abs(totalMs);
+
+            let hours = Math.floor(ms / 3600000);
+            ms -= hours * 3600000;
+            let minutes = Math.floor(ms / 60000);
+            ms -= minutes * 60000;
+            let seconds = Math.floor(ms / 1000);
+
+            hours = Math.max(hours, 0);
+            minutes = Math.max(minutes, 0);
+            seconds = Math.max(seconds, 0);
+
+            const h = String(hours).padStart(2, '0');
+            const m = String(minutes).padStart(2, '0');
+            const s = String(seconds).padStart(2, '0');
+
+            timerDisplay = `${h}:${m}:${s}`;
+        }
+
+        const requestData = async () => {
+            const axiosOptions = {
+                method: 'GET',
+                url: requestUrl,
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache',
+                    'Expires': '0',
+                },
+            };
+
+            try {
+                const result = await axios(axiosOptions);
+                totalAmountRaised = result.data.sumDonations + result.data.sumPledges;
+            } catch (err) {
+                console.error('Extra Life API request failed.', err);
+            };
+        }
+
+        let timerInterval;
+        timerInterval = setInterval(() => {
+            updateTimer();
+            if (totalSecondsLeft < 1) {
+                clearInterval(timerInterval);
+                timerDisplay = '00:00:00';
+            }
+            document.getElementById('root').innerHTML = timerDisplay;
+        }, 1000);
+
+        const requestInterval = setInterval(() => {
+            requestData();
+        }, 20000);
+
+        requestData();
+
+    </script>
 </head>
 <body>
     <div id='root'></div>
