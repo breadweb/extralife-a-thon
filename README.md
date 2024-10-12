@@ -2,15 +2,17 @@
 
 ## About
 
-The ExtraLife-A-Thon is a simple web application that Extra Life participants can use to support their fundraising efforts. It is a count down timer that is extended every time a participant or team's fundraising amount increases.
+The ExtraLife-A-Thon is a simple web application that Extra Life participants can use to support their fundraising efforts. It is a count down timer that is extended every time a participant's total amount raised increases.
 
 The primary use case to be added to an OBS scene as a browser source for inclusion in a LIVE stream on Twitch, YouTube, or TikTok.
 
+The implementation is intentionally simple so it can be modified and styled however desired.
+
 ## How to Use
 
-1. Download the `index.html` file.
-2. Edit the settings at the top of the file.
-3. Add to OBS as a browser source.
+1. Download the files from the `src` directory to a local directory on your computer.
+2. Edit the settings at the top of the the `index.html` file.
+3. Add to the `index.html` file to OBS as a browser source.
 
 ## License
 
@@ -18,7 +20,7 @@ Distributed under the MIT license. See [LICENSE](https://github.com/breadweb/ext
 
 ## Donations
 
-I do not expect anything in return, but if you are determined, you could always make a donation to my [Extra Life](https://bread4kids.tv/extralife) since this is all for the kids!
+I do not expect anything in return but if you are determined, you could always make a donation to my [Extra Life](https://bread4kids.tv/extralife) since this is all for the kids!
 
 ## Support and Contact
 
