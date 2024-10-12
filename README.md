@@ -4,7 +4,7 @@
 
 The ExtraLife-A-Thon is a simple web application that Extra Life participants can use to support their fundraising efforts. It is a count down timer that is extended every time a participant's total amount raised increases.
 
-The primary use case to be added to an OBS scene as a browser source for inclusion in a LIVE stream on Twitch, YouTube, or TikTok.
+The primary use case is to be added to an OBS scene as a browser source for inclusion in a LIVE stream on Twitch, YouTube, or TikTok.
 
 The implementation is intentionally simple so it can be modified and styled however desired.
 
