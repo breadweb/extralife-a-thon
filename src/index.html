@@ -7,21 +7,53 @@
     <script src="luxon.js"></script>
     <script src="axios.min.js"></script>
     <script>
-        const DateTime = luxon.DateTime;
+        // For use details and instructions, visit https://github.com/breadweb/extralife-a-thon
+        // For support or feature requests, visit https://bread4kids.tv/discord
+        // ====================================================================================
 
-        // Settings
+        // Find your participant ID at the end of your Extra Life donation page. Set this to '' if
+        // using team mode instead.
         const participantId = '531439';
-        const requestUrl = `https://www.extra-life.org/api/participants/${participantId}`;
-        const startDateTime = DateTime.local(2024, 11, 4, 10, 0); // Use local date/time.
-        const totalRaisedStartingAmount = 0; // Amount of money raised to start counting from, in dollars.
-        const initialSeconds = 28800; // 8 hours.
+
+        // Find your team ID at the end of your team's Extra Life donation page. Set this to '' if
+        // using participant mode instead.
+        const teamId = '';
+
+        // Set to the date and time for the start of the count down. This is typically the start time
+        // of your LIVE stream. The date and time should be for your local timezone. Use 24 hour clock
+        // for the time.
+        const startDate = '11/02/2024';
+        const startTime = '10:00:00';
+
+        // The amount of seconds added is based on the total amount (donations and pledges) that you
+        // or your team have raised in the calendar year. Change this number if you want to only count
+        // the amount raised after a certain point. For example, if you've raised $1,000 by the time your
+        // LIVE stream starts, set this to 1000 and only the amount earned after that mark will be used
+        // for increasing the timer.
+        const totalRaisedStartingAmount = 0;
+
+        // Typically your LIVE stream will be a minimum amount of time and amount raised will add more
+        // time in addition to this time you pledge to stream for "free".
+        const initialSeconds = 14400; // 4 hours.
+
+        // Set the amount of seconds to add to the timer for each additional dollar raised.
         const secondsPerDollar = 60;
 
-        let totalAmountRaised = 0;
-        let timerDisplay = '00:00:00';
-        let totalSecondsLeft = 0;
+        // ====================================================================================
 
-        const updateTimer = () => {
+        const DateTime = luxon.DateTime;
+
+        const startDateTime = DateTime.fromFormat(`${startDate} ${startTime}`, 'M/d/yyyy h:mm:ss');
+
+        const requestUrl = participantId
+            ? `https://www.extra-life.org/api/participants/${participantId}`
+            : `https://www.extra-life.org/api/teams/${teamId}`
+
+        let totalAmountRaised = 0;
+
+        // Calculates the total amount of seconds to add to the start date based on the settings
+        // above and then returns the display for the countdown timer and the total seconds left.
+        const getTimerInfo = () => {
             const additionalSeconds = secondsPerDollar * Math.floor(
                 Math.max(totalAmountRaised - totalRaisedStartingAmount, 0)
             );
@@ -30,8 +62,6 @@
             const end = startDateTime.plus({ seconds: initialSeconds + additionalSeconds})
 
             const totalMs = now.diff(end).milliseconds;
-
-            totalSecondsLeft = Math.floor(totalMs / 1000) * -1;
 
             let ms = Math.abs(totalMs);
 
@@ -49,9 +79,13 @@
             const m = String(minutes).padStart(2, '0');
             const s = String(seconds).padStart(2, '0');
 
-            timerDisplay = `${h}:${m}:${s}`;
-        }
+            return {
+                timerDisplay: `${h}:${m}:${s}`,
+                totalSecondsLeft: Math.floor(totalMs / 1000) * -1,
+            }
+        };
 
+        // Makes a request to the Extra Life API to get the participant or team data.
         const requestData = async () => {
             const axiosOptions = {
                 method: 'GET',
@@ -63,29 +97,52 @@
                 },
             };
 
-            try {
-                const result = await axios(axiosOptions);
-                totalAmountRaised = result.data.sumDonations + result.data.sumPledges;
-            } catch (err) {
-                console.error('Extra Life API request failed.', err);
-            };
-        }
+            const result = await axios(axiosOptions);
+            totalAmountRaised = result.data.sumDonations + result.data.sumPledges;
+        };
+
+        const updateDisplay = (content) => {
+            document.getElementById('root').innerHTML = content;
+        };
 
         let timerInterval;
+        let requestInterval;
+
+        const makeRequestForData = async () => {
+            try {
+                await requestData();
+            } catch (err) {
+                console.error('Extra Life API request failed.', err);
+                if (err.status === 404) {
+                    // It is important to stop making requests for 404 responses otherwise rate
+                    // limiting may be applied.
+                    clearInterval(timerInterval);
+                    clearInterval(requestInterval);
+                    updateDisplay('Invalid participant or team ID!');
+                }
+            }
+        }
+
+        // Get the timer info every second and update the timer display. If the timer reaches the
+        // end, stop updating the timer and stop making requests for Extra Life data.
         timerInterval = setInterval(() => {
-            updateTimer();
-            if (totalSecondsLeft < 1) {
+            const result = getTimerInfo();
+            if (result.totalSecondsLeft < 1) {
                 clearInterval(timerInterval);
+                clearInterval(requestInterval);
                 timerDisplay = '00:00:00';
             }
-            document.getElementById('root').innerHTML = timerDisplay;
+            updateDisplay(result.timerDisplay);
         }, 1000);
 
-        const requestInterval = setInterval(() => {
-            requestData();
+        // Request the participant or team data from the Extra Life API every 20 seconds. It is not
+        // suggested to request the data faster than this otherwise you risk being rate limited.
+        requestInterval = setInterval(async () => {
+            makeRequestForData();
         }, 20000);
 
-        requestData();
+        // Request data from the Extra Life API immediately.
+        makeRequestForData();
 
     </script>
 </head>
