@@ -130,7 +130,8 @@
             if (result.totalSecondsLeft < 1) {
                 clearInterval(timerInterval);
                 clearInterval(requestInterval);
-                timerDisplay = '00:00:00';
+                updateDisplay('00:00:00');
+                return;
             }
             updateDisplay(result.timerDisplay);
         }, 1000);
