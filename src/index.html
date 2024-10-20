@@ -90,10 +90,9 @@
             const axiosOptions = {
                 method: 'GET',
                 url: requestUrl,
-                headers: {
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache',
-                    'Expires': '0',
+                params: {
+                    version: '1.3',
+                    t: DateTime.now().toMillis(),
                 },
             };
 
